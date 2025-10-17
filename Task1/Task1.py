@@ -1,8 +1,6 @@
 try:
-    # If run inside package (e.g. Streamlit)
     from .DSP_Task_2_TEST_functions import *
 except ImportError:
-    # If run standalone (python Task1.py)
     from DSP_Task_2_TEST_functions import *
 import pandas as pd
 import numpy as np
