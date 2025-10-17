@@ -65,9 +65,9 @@ def quantizeSignal(file_name, num_levels, IsBits):
 
 if __name__ == "__main__":
     # === Test 1 ===
-    indices, codes, q_signal, error = quantizeSignal("Quan1_input.txt", 3, True)
-    QuantizationTest1("Quan1_Out.txt", codes, q_signal)
+    indices, codes, q_signal, error = quantizeSignal("Task3/Quan1_input.txt", 3, True)
+    QuantizationTest1("Task3/Quan1_Out.txt", codes, q_signal)
 
     # === Test 2 ===
-    indices, codes, q_signal, error = quantizeSignal("Quan2_input.txt", 4, False)
-    QuantizationTest2("Quan2_Out.txt", indices, codes, q_signal, error)
+    indices, codes, q_signal, error = quantizeSignal("Task3/Quan2_input.txt", 4, False)
+    QuantizationTest2("Task3/Quan2_Out.txt", indices, codes, q_signal, error)
