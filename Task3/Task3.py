@@ -30,37 +30,28 @@ def ReadSignalFile(file_name):
 
 def quantizeSignal(file_name, num_levels, IsBits):
     
-    # Load signal
     _, signal = ReadSignalFile(file_name)
     
-    # If IsBits=True, interpret num_levels as number of bits
     if IsBits:
-        num_levels = 2 ** num_levels  # compute number of levels
+        num_levels = 2 ** num_levels
 
     min_val = np.min(signal)
     max_val = np.max(signal)
 
-    # 1️⃣ make equally spaced interval boundaries (edges)
     edges = np.linspace(min_val, max_val, num_levels + 1)
 
-    # 2️⃣ compute midpoints for each interval
     levels = (edges[:-1] + edges[1:]) / 2
 
-    # 3️⃣ assign each sample to a level (find interval index)
     indices = np.digitize(signal, edges, right=False)
     indices = np.clip(indices, 1, num_levels)
 
-    # 4️⃣ replace each sample with its corresponding midpoint
     q_signal = levels[indices - 1]
 
-    # 5️⃣ quantization error
     error = q_signal - signal
 
-    # 6️⃣ encoded binary representation for each index
     bits = int(np.ceil(np.log2(num_levels)))
     codes = [format(i - 1, f'0{bits}b') for i in indices]
 
-    # ✅ return all needed lists for both tests
     return indices.tolist(), codes, q_signal.tolist(), error.tolist()
 
 if __name__ == "__main__":
