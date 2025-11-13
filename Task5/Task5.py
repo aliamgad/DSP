@@ -51,6 +51,7 @@ def Convolution(signal1path, signal2path):
     Idx = np.arange(minidx, maxidx + 1)
 
     S = np.convolve(S1, S2)
+    # S = np.zeros(10)
     # for i in range(len(Idx)):
     #     sum = 0
     #     for j in range(len(S1)):
