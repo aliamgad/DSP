@@ -2,7 +2,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-from Task6.Task6 import FourierTransform, GetAmplitudeAndPhaseShift, ReadSignalFile
+from Task6.Task6 import FourierTransform, ReadSignalFile, ConvertComplexToAmpPhase
 
 st.set_page_config(layout="wide", page_title="DFT / IDFT Analyzer")
 st.title("📈 DFT / IDFT Signal Analyzer")
@@ -21,14 +21,11 @@ if input_type == "Manual Input":
     except Exception:
         st.error("Invalid sample format; use comma-separated numbers.")
         st.stop()
-
-# File upload
 else:
     uploaded = st.file_uploader("Upload signal file (text)", type=["txt"])
     if uploaded is None:
         st.info("Upload a text file or switch to Manual Input.")
         st.stop()
-    # Save uploaded to temp and parse using provided ReadSignalFile
     temp_path = "uploaded_signal_temp.txt"
     with open(temp_path, "wb") as f:
         f.write(uploaded.read())
@@ -36,25 +33,20 @@ else:
     if len(samples) == 0:
         st.error("Uploaded file could not be parsed by ReadSignalFile(). Check file format.")
         st.stop()
-    # Cleanup temp file
     try:
         os.remove(temp_path)
     except:
         pass
 
-# Sampling frequency
 Fs = st.number_input("Sampling frequency (Hz)", min_value=0.1, value=1000.0, step=1.0, format="%.4f")
 
-# Buttons on main page
 col_calc, col_idft = st.columns(2)
 compute_dft = col_calc.button("Compute DFT", use_container_width=True)
 compute_idft = col_idft.button("Reconstruct (IDFT)", use_container_width=True)
 
-# Helper: frequency axis (f_k = k * Fs / N)
 def frequency_axis(N, Fs):
     return np.array([k * Fs / N for k in range(N)])
 
-# Plotting helpers
 def plot_stem_amplitude(freq, amp):
     fig, ax = plt.subplots(figsize=(10, 4))
     markerline, stemlines, baseline = ax.stem(freq, amp)
@@ -63,7 +55,7 @@ def plot_stem_amplitude(freq, amp):
     plt.setp(baseline, visible=True, color="0.8", linewidth=1)
     ax.set_xlabel("Frequency (Hz)", fontsize=11)
     ax.set_ylabel("|X[k]|", fontsize=11)
-    ax.set_title("DFT Amplitude Spectrum (Frequency in Hz)", fontsize=12, fontweight="bold")
+    ax.set_title("DFT Amplitude Spectrum", fontsize=12, fontweight="bold")
     ax.grid(True, linestyle=':', linewidth=0.7, alpha=0.5)
     return fig
 
@@ -79,20 +71,21 @@ def plot_stem_phase(freq, phase_deg):
     ax.grid(True, linestyle=':', linewidth=0.7, alpha=0.5)
     return fig
 
-# Compute & display DFT
 if compute_dft:
     st.subheader("🔹 DFT Analysis Results")
     N = len(samples)
     FT = FourierTransform(samples, IDFT=False)
-    amp, phase_rad = GetAmplitudeAndPhaseShift(FT)
-    amp = np.array(amp)
-    phase_deg = np.degrees(np.array(phase_rad))
-
-    freq = frequency_axis(N, Fs)
-
-    # Display frequency vs amplitude and phase
-    col1, col2 = st.columns(2)
     
+    # Use ConvertComplexToAmpPhase with phase wrapping
+    amp, phase_rad = ConvertComplexToAmpPhase(FT)
+    
+    # Round amplitudes to 12 decimals to match SignalCompare logic
+    amp = [round(a, 12) for a in amp]
+    
+    freq = frequency_axis(N, Fs)
+    phase_deg = np.degrees(np.array(phase_rad))
+    
+    col1, col2 = st.columns(2)
     with col1:
         st.write("**Amplitude Spectrum**")
         fig_amp = plot_stem_amplitude(freq, amp)
@@ -105,27 +98,21 @@ if compute_dft:
         st.pyplot(fig_phase)
         plt.close(fig_phase)
     
-    # Display numerical data
     st.subheader("📊 Frequency Domain Data")
     data_df = {
         "Frequency (Hz)": np.round(freq, 4),
-        "Amplitude |X[k]|": np.round(amp, 6),
+        "Amplitude |X[k]|": amp,
         "Phase (degrees)": np.round(phase_deg, 4)
     }
     st.dataframe(data_df, use_container_width=True)
 
-# Compute & display IDFT / reconstruction
 if compute_idft:
     st.subheader("🔹 Signal Reconstruction (IDFT)")
-    
-    # Use DFT of input then IDFT to reconstruct
     FT = FourierTransform(samples, IDFT=False)
     reconstructed = FourierTransform(FT, IDFT=True)
     recon_real = [x.real for x in reconstructed]
 
-    # Display reconstruction comparison
     col1, col2 = st.columns(2)
-    
     with col1:
         st.write("**Original Signal**")
         fig_orig, ax_orig = plt.subplots(figsize=(10, 4))
@@ -148,7 +135,6 @@ if compute_idft:
         st.pyplot(fig_rec)
         plt.close(fig_rec)
 
-    # Display numerical comparison
     st.subheader("📊 Original vs Reconstructed")
     comparison_df = {
         "Sample #": range(len(samples)),
@@ -157,12 +143,10 @@ if compute_idft:
         "Error": np.round(np.array(recon_real) - np.array(samples), 8)
     }
     st.dataframe(comparison_df, use_container_width=True)
-    
-    # Calculate and display error metrics
+
     error_array = np.array(recon_real) - np.array(samples)
     mse = np.mean(error_array ** 2)
     rmse = np.sqrt(mse)
-    
     col1, col2, col3 = st.columns(3)
     col1.metric("Mean Squared Error (MSE)", f"{mse:.2e}")
     col2.metric("Root Mean Squared Error (RMSE)", f"{rmse:.2e}")
