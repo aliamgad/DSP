@@ -18,9 +18,6 @@ def Compare_Signals(file_name,Your_indices,Your_samples):
                 line = f.readline()
             else:
                 break
-    print("Current Output Test file is: ")
-    print(file_name)
-    print("\n")
     if (len(expected_samples)!=len(Your_samples)) and (len(expected_indices)!=len(Your_indices)):
         print("Shift_Fold_Signal Test case failed, your signal have different length from the expected one")
         return
