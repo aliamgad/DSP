@@ -4,6 +4,8 @@ except ImportError:
     from CompareSignal import *
 import numpy as np
 import math
+import os
+from pathlib import Path
 
 
 def ReadSignalFile(file_name):
@@ -54,6 +56,44 @@ def TimeDelay(S1, S2, fs):
     return delay
 
 
+def ReadSignalsFromPoint3(base_path="Task7\\point3 Files"):
+    signals = {'Class 1': {}, 'Class 2': {}}
+    
+    for class_folder in ['Class 1', 'Class 2']:
+        folder_path = f"{base_path}\\{class_folder}"
+        for file_name in sorted(os.listdir(folder_path)):
+            if file_name.endswith('.txt'):
+                file_path = f"{folder_path}\\{file_name}"
+                signal_name = file_name.replace('.txt', '')
+                
+                with open(file_path, 'r') as f:
+                    signal_data = [float(line.strip()) for line in f if line.strip()]
+                
+                signals[class_folder][signal_name] = signal_data
+    
+    return signals
+
+
+def ClassifyTestSignals(base_path="Task7\\point3 Files"):
+    training_signals = ReadSignalsFromPoint3(base_path)
+    results = {}
+    
+    test_path = f"{base_path}\\Test Signals"
+    for file_name in sorted(os.listdir(test_path)):
+        if file_name.endswith('.txt'):
+            with open(f"{test_path}\\{file_name}", 'r') as f:
+                test_signal = [float(line.strip()) for line in f if line.strip()]
+            
+            test_name = file_name.replace('.txt', '')
+            
+            avg_c1 = round(np.mean([max(Corrlation(test_signal, s)) for s in training_signals['Class 1'].values() ]), 8)
+            avg_c2 = round(np.mean([max(Corrlation(test_signal, s)) for s in training_signals['Class 2'].values() ]), 8)
+            
+            results[test_name] = (avg_c1, avg_c2, 'Class 1' if avg_c1 > avg_c2 else 'Class 2')
+    
+    return results
+
+
 if __name__ == "__main__":
 
     indx, signal1 = ReadSignalFile("Task7\Point1 Correlation\Corr_input signal1.txt")
@@ -66,3 +106,7 @@ if __name__ == "__main__":
     _, signal2 = ReadSignalFile("Task7\Point2 Time analysis\TD_input signal2.txt")
 
     print("Time Delay Output:", TimeDelay(signal1, signal2, 100))
+    
+    classification_results = ClassifyTestSignals()
+    for test_name, (avg_c1, avg_c2, classified_class) in classification_results.items():
+        print(f"{test_name}: Class 1 Avg: {avg_c1}, Class 2 Avg: {avg_c2}, Classified as: {classified_class}")
