@@ -5,7 +5,6 @@ except ImportError:
 import numpy as np
 import math
 import os
-from pathlib import Path
 
 
 def ReadSignalFile(file_name):
