@@ -7,19 +7,27 @@ st.markdown("👋 Welcome to the DSP Project Framework!")
 
 st.markdown("### 📑 Available Tasks")
 
-col1, col2, col3 , col5, col6, col7 = st.columns(6)
+# Row 1
+col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.page_link("pages/Task1.py", label="🔢 Task 1 — Signal Operations")
 with col2:
     st.page_link("pages/Task2.py", label="📈 Task 2 — Signal Generation")
 with col3:
     st.page_link("pages/Task3.py", label="🔊 Task 3 — Signal Quantization")
-with col5:
+with col4:
     st.page_link("pages/Task5.py", label="🎛️ Task 5 — Digital Filters")
-with col6:
+
+# Row 2
+col1, col2, col3, col4 = st.columns(4)
+with col1:
     st.page_link("pages/Task6.py", label="📉 Task 6 — Fourier Transform")
-with col7:
+with col2:
     st.page_link("pages/Task7.py", label="🔍 Task 7 — Correlation Analysis")
+with col3:
+    st.page_link("pages/Task8.py", label="🩺 Task 8 — FIR Filter Design")
+with col4:
+    st.empty()
 
 st.markdown("---")
 st.caption("Use the links above to navigate between DSP tasks.")
